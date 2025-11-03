@@ -196,8 +196,8 @@ void CEntities::Store()
 			int iMembers = pParty->GetNumMembers();
 			for (int i = 0; i < iMembers; i++)
 			{
-				auto cSteamID = CSteamID(); pParty->GetMember(&cSteamID, i);
-				auto uAccountID = cSteamID.GetAccountID();
+				auto tSteamID = CSteamID(); pParty->GetMember(&tSteamID, i);
+				auto uAccountID = tSteamID.GetAccountID();
 				mParties[uAccountID] = 1;
 			}
 		}
