@@ -114,8 +114,8 @@ void CEntities::Store()
 		case ETFClassID::CZombie:
 			m_mGroups[EntityEnum::WorldNPC].push_back(pEntity);
 			break;
-		case ETFClassID::CTFPumpkinBomb:
 		case ETFClassID::CTFGenericBomb:
+		case ETFClassID::CTFPumpkinBomb:
 			m_mGroups[EntityEnum::WorldBomb].push_back(pEntity);
 			break;
 		case ETFClassID::CBaseAnimating:
