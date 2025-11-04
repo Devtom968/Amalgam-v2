@@ -73,12 +73,17 @@ void CCore::Load()
 	}
 
 	float flTime = 0.f;
-	while (!U::Memory.FindSignature("client.dll", "48 8B 0D ? ? ? ? 48 8B 10 48 8B 19 48 8B C8 FF 92") || !SDK::GetTeamFortressWindow())
+	while (true)
 	{
+		auto uSignature = U::Memory.FindSignature("client.dll", "48 8B 0D ? ? ? ? 48 8B 10 48 8B 19 48 8B C8 FF 92");
+		auto hWindow = SDK::GetTeamFortressWindow();
+		if (uSignature && hWindow)
+			break;
+
 		Sleep(500), flTime += 0.5f;
 		if (m_bUnload = m_bFailed = flTime >= 60.f)
 		{
-			AppendFailText("Failed to load");
+			AppendFailText(std::format("Failed to load in time ({:#x}, {:#x})", uSignature, uintptr_t(hWindow)).c_str());
 			return;
 		}
 		if (m_bUnload = m_bFailed = U::KeyHandler.Down(VK_F11, true))

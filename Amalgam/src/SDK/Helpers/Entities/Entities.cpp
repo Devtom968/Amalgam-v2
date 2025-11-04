@@ -320,7 +320,7 @@ void CEntities::Clear(bool bShutdown)
 
 void CEntities::ManualNetwork(const StartSoundParams_t& params)
 {
-	if (params.soundsource <= 0 || params.soundsource == I::EngineClient->GetLocalPlayer())
+	if (params.soundsource <= 0 || !params.origin || params.soundsource == I::EngineClient->GetLocalPlayer())
 		return;
 
 	auto pEntity = I::ClientEntityList->GetClientEntity(params.soundsource)->As<CBaseEntity>();

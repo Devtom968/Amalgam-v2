@@ -701,7 +701,7 @@ std::vector<Point_t> CAimbotProjectile::GetSplashPoints(Target_t& tTarget, std::
 		bool bValid = vPoint.m_tSolution.m_iCalculated != CalculatedEnum::Pending;
 		if (bValid)
 		{
-			Vec3 vPos; reinterpret_cast<CCollisionProperty*>(tTarget.m_pEntity->GetCollideable())->CalcNearestPoint(vPoint.m_vPoint, &vPos);
+			Vec3 vPos; tTarget.m_pEntity->m_Collision()->CalcNearestPoint(vPoint.m_vPoint, &vPos);
 			bValid = vPoint.m_vPoint.DistTo(vPos) < m_tInfo.m_flRadius;
 		}
 
@@ -849,7 +849,7 @@ std::vector<Point_t> CAimbotProjectile::GetSplashPointsSimple(Target_t& tTarget,
 		bool bValid = vPoint.m_tSolution.m_iCalculated != CalculatedEnum::Pending;
 		if (bValid)
 		{
-			Vec3 vPos = {}; reinterpret_cast<CCollisionProperty*>(tTarget.m_pEntity->GetCollideable())->CalcNearestPoint(vPoint.m_vPoint, &vPos);
+			Vec3 vPos = {}; tTarget.m_pEntity->m_Collision()->CalcNearestPoint(vPoint.m_vPoint, &vPos);
 			bValid = vPoint.m_vPoint.DistTo(vPos) < m_tInfo.m_flRadius;
 		}
 

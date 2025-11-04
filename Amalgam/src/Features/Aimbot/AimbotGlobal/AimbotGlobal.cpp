@@ -320,7 +320,7 @@ bool CAimbotGlobal::ValidBomb(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CBaseEn
 			|| !FriendlyFire() && pEntity->m_iTeamNum() == pLocal->m_iTeamNum())
 			continue;
 
-		Vec3 vPos; reinterpret_cast<CCollisionProperty*>(pEntity->GetCollideable())->CalcNearestPoint(vOrigin, &vPos);
+		Vec3 vPos; pEntity->m_Collision()->CalcNearestPoint(vOrigin, &vPos);
 		if (vOrigin.DistTo(vPos) > 300.f)
 			continue;
 

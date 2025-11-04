@@ -963,6 +963,7 @@
     <ClCompile Include="src\Hooks\CBaseAnimating_UpdateClientSideAnimation.cpp" />
     <ClCompile Include="src\Hooks\CBaseEntity_BaseInterpolatePart1.cpp" />
     <ClCompile Include="src\Hooks\CBaseEntity_EstimateAbsVelocity.cpp" />
+    <ClCompile Include="src\Hooks\CBasePlayer_CalcObserverView.cpp" />
     <ClCompile Include="src\Hooks\CInput_ValidateUserCmd.cpp" />
     <ClCompile Include="src\Hooks\CTFRocketLauncher_CheckReloadMisfire.cpp" />
     <ClCompile Include="src\Hooks\CTFPlayer_FireBullet.cpp" />
@@ -970,7 +971,7 @@
     <ClCompile Include="src\Hooks\CBaseEntity_SetAbsVelocity.cpp" />
     <ClCompile Include="src\Hooks\CBaseEntity_WorldSpaceCenter.cpp" />
     <ClCompile Include="src\Hooks\CBaseHudChatLine_InsertAndColorizeText.cpp" />
-    <ClCompile Include="src\Hooks\CBasePlayer_CalcPlayerView.cpp" />
+    <ClCompile Include="src\Hooks\CBasePlayer_CalcView.cpp" />
     <ClCompile Include="src\Hooks\CBasePlayer_CalcViewModelView.cpp" />
     <ClCompile Include="src\Hooks\CBasePlayer_ItemPostFrame.cpp" />
     <ClCompile Include="src\Hooks\CBaseViewModel_ShouldFlipViewModel.cpp" />

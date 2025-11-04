@@ -77,7 +77,7 @@ static inline bool CheckEntities(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUse
 			continue;
 
 		// CEntitySphereQuery actually does a box test so we need to make sure the distance is less than the radius first
-		Vec3 vPos; reinterpret_cast<CCollisionProperty*>(pEntity->GetCollideable())->CalcNearestPoint(vOrigin, &vPos);
+		Vec3 vPos; pEntity->m_Collision()->CalcNearestPoint(vOrigin, &vPos);
 		if (vOrigin.DistTo(vPos) > flRadius)
 			continue;
 
@@ -137,7 +137,7 @@ static inline bool CheckLocal(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CBaseEn
 {
 	flRadius += 1;
 
-	Vec3 vPos; reinterpret_cast<CCollisionProperty*>(pLocal->GetCollideable())->CalcNearestPoint(vOrigin, &vPos);
+	Vec3 vPos; pLocal->m_Collision()->CalcNearestPoint(vOrigin, &vPos);
 	if (vOrigin.DistTo(vPos) > flRadius)
 		return false;
 
