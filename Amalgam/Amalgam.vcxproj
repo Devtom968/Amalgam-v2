@@ -1077,7 +1077,7 @@
     <ClCompile Include="src\SDK\Helpers\Fonts\Fonts.cpp" />
     <ClCompile Include="src\SDK\Helpers\TraceFilters\TraceFilters.cpp" />
     <ClCompile Include="src\SDK\SDK.cpp" />
-    <ClCompile Include="src\Utils\ConVars\ConVars.cpp" />
+    <ClCompile Include="src\SDK\Helpers\ConVars\ConVars.cpp" />
     <ClCompile Include="src\Utils\CrashLog\CrashLog.cpp" />
     <ClCompile Include="src\Utils\Hooks\Hooks.cpp" />
     <ClCompile Include="src\Utils\Interfaces\Interfaces.cpp" />
@@ -1451,14 +1451,13 @@
     <ClInclude Include="src\SDK\Events\Events.h" />
     <ClInclude Include="src\SDK\Globals.h" />
     <ClInclude Include="src\SDK\Helpers\Draw\Draw.h" />
-    <ClInclude Include="src\SDK\Helpers\Draw\Icons.h" />
     <ClInclude Include="src\SDK\Helpers\Entities\Entities.h" />
     <ClInclude Include="src\SDK\Helpers\Fonts\Fonts.h" />
     <ClInclude Include="src\SDK\Helpers\Particles\Particles.h" />
     <ClInclude Include="src\SDK\Helpers\TraceFilters\TraceFilters.h" />
     <ClInclude Include="src\SDK\SDK.h" />
     <ClInclude Include="src\SDK\Vars.h" />
-    <ClInclude Include="src\Utils\ConVars\ConVars.h" />
+    <ClInclude Include="src\SDK\Helpers\ConVars\ConVars.h" />
     <ClInclude Include="src\Utils\CrashLog\CrashLog.h" />
     <ClInclude Include="src\Utils\Macros\Macros.h" />
     <ClInclude Include="src\Utils\Hash\FNV1A.h" />

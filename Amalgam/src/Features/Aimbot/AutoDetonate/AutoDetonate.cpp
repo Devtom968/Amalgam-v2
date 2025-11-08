@@ -48,9 +48,9 @@ static inline bool GetRadius(EntityEnum::EntityEnum iGroup, CBaseEntity* pProjec
 		flRadius *= 146.f;
 		if (!pPipebomb->m_bTouched())
 		{
-			static auto tf_grenadelauncher_livetime = U::ConVars.FindVar("tf_grenadelauncher_livetime");
-			static auto tf_sticky_radius_ramp_time = U::ConVars.FindVar("tf_sticky_radius_ramp_time");
-			static auto tf_sticky_airdet_radius = U::ConVars.FindVar("tf_sticky_airdet_radius");
+			static auto tf_grenadelauncher_livetime = H::ConVars.FindVar("tf_grenadelauncher_livetime");
+			static auto tf_sticky_radius_ramp_time = H::ConVars.FindVar("tf_sticky_radius_ramp_time");
+			static auto tf_sticky_airdet_radius = H::ConVars.FindVar("tf_sticky_airdet_radius");
 			float flLiveTime = tf_grenadelauncher_livetime->GetFloat();
 			float flRampTime = tf_sticky_radius_ramp_time->GetFloat();
 			float flAirdetRadius = tf_sticky_airdet_radius->GetFloat();

@@ -274,7 +274,7 @@ int CAimbotGlobal::GetPriority(int iIndex)
 
 bool CAimbotGlobal::FriendlyFire()
 {
-	static auto mp_friendlyfire = U::ConVars.FindVar("mp_friendlyfire");
+	static auto mp_friendlyfire = H::ConVars.FindVar("mp_friendlyfire");
 	return mp_friendlyfire->GetBool();
 }
 
