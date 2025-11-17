@@ -2333,17 +2333,17 @@ void CMenu::MenuSettings(int iTab)
 
 					std::vector<std::pair<std::filesystem::directory_entry, std::string>> vConfigs = {};
 					bool bDefaultFound = false;
-					for (auto& entry : std::filesystem::directory_iterator(sPath))
+					for (auto& tEntry : std::filesystem::directory_iterator(sPath))
 					{
-						if (!entry.is_regular_file() || entry.path().extension() != F::Configs.m_sConfigExtension)
+						if (!tEntry.is_regular_file() || tEntry.path().extension() != F::Configs.m_sConfigExtension)
 							continue;
 
-						std::string sConfigName = entry.path().filename().string();
-						sConfigName.erase(sConfigName.end() - F::Configs.m_sConfigExtension.size(), sConfigName.end());
-						if (FNV1A::Hash32(sConfigName.c_str()) == FNV1A::Hash32Const("default"))
+						std::string sName = tEntry.path().filename().string();
+						sName.erase(sName.end() - F::Configs.m_sConfigExtension.size(), sName.end());
+						if (FNV1A::Hash32(sName.c_str()) == FNV1A::Hash32Const("default"))
 							bDefaultFound = true;
 
-						vConfigs.emplace_back(entry, sConfigName);
+						vConfigs.emplace_back(tEntry, sName);
 					}
 					if (!bVisual)
 					{
