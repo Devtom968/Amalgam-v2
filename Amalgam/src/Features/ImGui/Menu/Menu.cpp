@@ -2311,6 +2311,7 @@ void CMenu::MenuSettings(int iTab)
 					auto& sPath = !bVisual ? F::Configs.m_sConfigPath : F::Configs.m_sVisualsPath;
 					auto& sConfig = !bVisual ? F::Configs.m_sCurrentConfig : F::Configs.m_sCurrentVisuals;
 					auto sType = !bVisual ? "Config" : "Visual";
+					bool bNoSave = GetAsyncKeyState(VK_SHIFT) & 0x8000;
 
 					FSDropdown("Name", &sStaticName, {}, FSDropdownEnum::AutoUpdate, -H::Draw.Unscale(FCalcTextSize("CREATE").x + FCalcTextSize("FOLDER").x) - 72);
 					PushDisabled(sStaticName.empty());
@@ -2330,6 +2331,7 @@ void CMenu::MenuSettings(int iTab)
 					PopDisabled();
 					if (FButton("Folder", FButtonEnum::Fit | FButtonEnum::SameLine, { 0, 40 }))
 						ShellExecuteA(NULL, NULL, sPath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+					vRowSizes.clear();
 
 					std::vector<std::pair<std::filesystem::directory_entry, std::string>> vConfigs = {};
 					bool bDefaultFound = false;
@@ -2368,6 +2370,7 @@ void CMenu::MenuSettings(int iTab)
 
 						SetCursorPos({ vOriginalPos.x + H::Draw.Scale(2), vOriginalPos.y + H::Draw.Scale(9) });
 						bool bLoad = IconButton(bCurrentConfig ? ICON_MD_REFRESH : ICON_MD_DOWNLOAD);
+						FTooltip(ICON_MD_ADD ICON_MD_FILE_UPLOAD_OFF, bNoSave && IsItemHovered(), 300.f, F::Render.IconFont);
 
 						SetCursorPos({ H::Draw.Scale(43), vOriginalPos.y + H::Draw.Scale(14) });
 						TextColored(bCurrentConfig ? F::Render.Active.Value : F::Render.Inactive.Value, TruncateText(sConfigName, GetWindowWidth() - GetStyle().WindowPadding.x * 2 - H::Draw.Scale(80)).c_str());
@@ -2378,6 +2381,7 @@ void CMenu::MenuSettings(int iTab)
 
 						SetCursorPos({ GetWindowWidth() - H::Draw.Scale(iOffset += 25), vOriginalPos.y + H::Draw.Scale(9) });
 						bool bSave = IconButton(ICON_MD_SAVE);
+						FTooltip(ICON_MD_ADD ICON_MD_FILE_DOWNLOAD_OFF, bNoSave && IsItemHovered(), 300.f, F::Render.IconFont);
 
 						if (bLoad)
 						{
