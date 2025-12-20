@@ -175,7 +175,6 @@
     <ClCompile Include="src\Hooks\ISteamNetworkingUtils_GetPingToDataCenter.cpp" />
     <ClCompile Include="src\Hooks\IVModelRender_DrawModelExecute.cpp" />
     <ClCompile Include="src\Hooks\IVModelRender_ForcedMaterialOverride.cpp" />
-    <ClCompile Include="src\Hooks\KeyValues_SetInt.cpp" />
     <ClCompile Include="src\Hooks\NotificationQueue_Add.cpp" />
     <ClCompile Include="src\Hooks\R_DrawSkyBox.cpp" />
     <ClCompile Include="src\Hooks\RecvProxy_SimulationTime.cpp" />

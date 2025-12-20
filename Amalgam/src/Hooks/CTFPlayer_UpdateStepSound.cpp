@@ -11,7 +11,7 @@ MAKE_HOOK(CTFPlayer_UpdateStepSound, S::CTFPlayer_UpdateStepSound(), void,
 		return CALL_ORIGINAL(rcx, psurface, vecOrigin, vecVelocity);
 #endif
 
-	static const auto dwDesired = S::CTFPlayer_FireEvent_UpdateStepSound_Call();
+	const auto dwDesired = S::CTFPlayer_FireEvent_UpdateStepSound_Call();
 	const auto dwRetAddr = uintptr_t(_ReturnAddress());
 
 	if (dwRetAddr == dwDesired && rcx == H::Entities.GetLocal())

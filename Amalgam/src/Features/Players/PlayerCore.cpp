@@ -73,11 +73,11 @@ void CPlayerlistCore::SavePlayerlist()
 		write_json(F::Configs.m_sCorePath + "Players.json", tWrite);
 
 		F::PlayerUtils.m_bSave = false;
-		SDK::Output("Amalgam", "Saved playerlist", { 175, 150, 255 }, OUTPUT_CONSOLE | OUTPUT_DEBUG | OUTPUT_TOAST | OUTPUT_MENU);
+		SDK::Output("Amalgam", "Saved playerlist", DEFAULT_COLOR, OUTPUT_CONSOLE | OUTPUT_TOAST | OUTPUT_MENU | OUTPUT_DEBUG);
 	}
 	catch (...)
 	{
-		SDK::Output("Amalgam", "Save playerlist failed", { 175, 150, 255, 127 }, OUTPUT_CONSOLE | OUTPUT_DEBUG);
+		SDK::Output("Amalgam", "Save playerlist failed", ALTERNATE_COLOR, OUTPUT_CONSOLE | OUTPUT_MENU | OUTPUT_DEBUG);
 	}
 }
 
@@ -130,6 +130,8 @@ void CPlayerlistCore::LoadPlayerlist()
 					F::PlayerUtils.m_vTags.push_back(tTag);
 			}
 		}
+		else
+			SDK::Output("Amalgam", "Playerlist config not found", ALTERNATE_COLOR, OUTPUT_CONSOLE | OUTPUT_MENU | OUTPUT_DEBUG);
 
 		if (auto tSub = tRead.get_child_optional("Tags"))
 		{
@@ -150,6 +152,8 @@ void CPlayerlistCore::LoadPlayerlist()
 				}
 			}
 		}
+		else
+			SDK::Output("Amalgam", "Playerlist tags not found", ALTERNATE_COLOR, OUTPUT_CONSOLE | OUTPUT_MENU | OUTPUT_DEBUG);
 
 		if (auto tSub = tRead.get_child_optional("Aliases"))
 		{
@@ -162,12 +166,14 @@ void CPlayerlistCore::LoadPlayerlist()
 					F::PlayerUtils.m_mPlayerAliases[uAccountID] = sAlias;
 			}
 		}
+		else
+			SDK::Output("Amalgam", "Playerlist aliases not found", ALTERNATE_COLOR, OUTPUT_CONSOLE | OUTPUT_MENU | OUTPUT_DEBUG);
 
 		F::PlayerUtils.m_bLoad = false;
-		SDK::Output("Amalgam", "Loaded playerlist", { 175, 150, 255 }, OUTPUT_CONSOLE | OUTPUT_DEBUG | OUTPUT_TOAST | OUTPUT_MENU);
+		SDK::Output("Amalgam", "Loaded playerlist", DEFAULT_COLOR, OUTPUT_CONSOLE | OUTPUT_TOAST | OUTPUT_MENU | OUTPUT_DEBUG);
 	}
 	catch (...)
 	{
-		SDK::Output("Amalgam", "Load playerlist failed", { 175, 150, 255, 127 }, OUTPUT_CONSOLE | OUTPUT_DEBUG);
+		SDK::Output("Amalgam", "Load playerlist failed", ALTERNATE_COLOR, OUTPUT_CONSOLE | OUTPUT_MENU | OUTPUT_DEBUG);
 	}
 }
