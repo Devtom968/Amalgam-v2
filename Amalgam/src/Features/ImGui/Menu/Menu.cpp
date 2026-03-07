@@ -4306,7 +4306,7 @@ void CMenu::DrawBinds() {
              vWindowPos.y + H::Draw.Scale(iListStart + 22 * i)},
             {vWindowPos.x + flWidth - H::Draw.Scale(4),
              vWindowPos.y + H::Draw.Scale(iListStart + 22 * (i + 1))},
-            F::Render.Background1, style.FrameRounding);
+            F::Render.Background1, GetStyle().FrameRounding);
       }
       float flPosX = 0;
 
