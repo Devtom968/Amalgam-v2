@@ -1,7 +1,3 @@
-README ที่คุณทำมาดีแล้วครับ ดูเป็น **GitHub project จริงจังแบบ dev** เลย 👍 แต่ผมจะช่วย **จัดให้ดูโปรขึ้นอีกนิด** เช่น spacing, badge, credit และ header ให้สะอาดขึ้น
-
-ตัวอย่างเวอร์ชันที่ปรับแล้ว 👇
-
 ````markdown
 <div align="center">
 
