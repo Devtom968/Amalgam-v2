@@ -502,6 +502,19 @@ static inline std::vector<std::pair<Vec3, int>> ComputeSphere(float flRadius,
       vFloor.z = -flRadius; // target the floor specifically
       vPoints.emplace_back(vFloor, iPointType);
     }
+    // Add specialized wall and ceiling points for extreme splash capability
+    for (int i = 0; i < 8; i++) {
+      float flAngle = i * 45.f;
+      Vec3 vWall;
+      Math::AngleVectors({0, flAngle, 0}, &vWall);
+      vWall *= flRadius * 0.9f;
+      vWall.z = 0.f; // wall level
+      vPoints.emplace_back(vWall, iPointType);
+
+      Vec3 vCeil = vWall;
+      vCeil.z = flRadius * 0.9f; // ceiling level
+      vPoints.emplace_back(vCeil, iPointType);
+    }
   }
 
   return vPoints;

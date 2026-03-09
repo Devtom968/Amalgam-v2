@@ -483,11 +483,13 @@ int CAimbotHitscan::CanHit(Target_t &tTarget, CTFPlayer *pLocal,
               !Vars::Aimbot::General::AssistStrength.Value;
 
           if (!bTriggerbot) {
-            float flScale = Vars::Aimbot::Hitscan::MultipointScale.Value / 100;
+            float flScale =
+                Vars::Aimbot::Hitscan::MultipointScale.Value / 100.f;
             Vec3 vMinsS = (vMins - vMaxs) / 2 * flScale;
             Vec3 vMaxsS = (vMaxs - vMins) / 2 * flScale;
 
             vPoints = {Vec3(),
+                       // Corners
                        Vec3(vMinsS.x, vMinsS.y, vMaxsS.z),
                        Vec3(vMaxsS.x, vMinsS.y, vMaxsS.z),
                        Vec3(vMinsS.x, vMaxsS.y, vMaxsS.z),
@@ -495,7 +497,11 @@ int CAimbotHitscan::CanHit(Target_t &tTarget, CTFPlayer *pLocal,
                        Vec3(vMinsS.x, vMinsS.y, vMinsS.z),
                        Vec3(vMaxsS.x, vMinsS.y, vMinsS.z),
                        Vec3(vMinsS.x, vMaxsS.y, vMinsS.z),
-                       Vec3(vMaxsS.x, vMaxsS.y, vMinsS.z)};
+                       Vec3(vMaxsS.x, vMaxsS.y, vMinsS.z),
+                       // Faces
+                       Vec3(vMinsS.x, 0, 0), Vec3(vMaxsS.x, 0, 0),
+                       Vec3(0, vMinsS.y, 0), Vec3(0, vMaxsS.y, 0),
+                       Vec3(0, 0, vMinsS.z), Vec3(0, 0, vMaxsS.z)};
           }
         }
 
@@ -566,8 +572,7 @@ int CAimbotHitscan::CanHit(Target_t &tTarget, CTFPlayer *pLocal,
           tTarget.m_pEntity->m_Collision()->CollisionToWorldTransform();
 
       std::vector<Vec3> vPoints = {Vec3()};
-      // if (Vars::Aimbot::Hitscan::MultipointScale.Value > 0.f)
-      {
+      if (Vars::Aimbot::Hitscan::MultipointScale.Value > 0.f) {
         bool bTriggerbot =
             (Vars::Aimbot::General::AimType.Value ==
                  Vars::Aimbot::General::AimTypeEnum::Smooth ||
@@ -576,12 +581,12 @@ int CAimbotHitscan::CanHit(Target_t &tTarget, CTFPlayer *pLocal,
             !Vars::Aimbot::General::AssistStrength.Value;
 
         if (!bTriggerbot) {
-          float flScale =
-              0.5f; // Vars::Aimbot::Hitscan::MultipointScale.Value / 100;
+          float flScale = Vars::Aimbot::Hitscan::MultipointScale.Value / 100.f;
           Vec3 vMinsS = (vMins - vMaxs) / 2 * flScale;
           Vec3 vMaxsS = (vMaxs - vMins) / 2 * flScale;
 
           vPoints = {Vec3(),
+                     // Corners
                      Vec3(vMinsS.x, vMinsS.y, vMaxsS.z),
                      Vec3(vMaxsS.x, vMinsS.y, vMaxsS.z),
                      Vec3(vMinsS.x, vMaxsS.y, vMaxsS.z),
@@ -589,7 +594,11 @@ int CAimbotHitscan::CanHit(Target_t &tTarget, CTFPlayer *pLocal,
                      Vec3(vMinsS.x, vMinsS.y, vMinsS.z),
                      Vec3(vMaxsS.x, vMinsS.y, vMinsS.z),
                      Vec3(vMinsS.x, vMaxsS.y, vMinsS.z),
-                     Vec3(vMaxsS.x, vMaxsS.y, vMinsS.z)};
+                     Vec3(vMaxsS.x, vMaxsS.y, vMinsS.z),
+                     // Faces
+                     Vec3(vMinsS.x, 0, 0), Vec3(vMaxsS.x, 0, 0),
+                     Vec3(0, vMinsS.y, 0), Vec3(0, vMaxsS.y, 0),
+                     Vec3(0, 0, vMinsS.z), Vec3(0, 0, vMaxsS.z)};
         }
       }
 

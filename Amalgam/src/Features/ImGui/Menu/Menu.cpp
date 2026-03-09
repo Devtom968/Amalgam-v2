@@ -3,6 +3,7 @@
 
 #include "../../Binds/Binds.h"
 #include "../../Configs/Configs.h"
+#include "../../Lua/Lua.h"
 #include "../../Misc/Misc.h"
 #include "../../Output/Output.h"
 #include "../../Players/PlayerUtils.h"
@@ -12,6 +13,7 @@
 #include "../../Visuals/Visuals.h"
 #include "Components.h"
 #include <wininet.h>
+
 #pragma comment(lib, "wininet.lib")
 #include <fstream>
 #include <sstream>
@@ -114,7 +116,7 @@ void CMenu::DrawMenu() {
     }
 
     static int iAimbotTab = 0, iVisualsTab = 0, iMiscTab = 0, iLogsTab = 0,
-               iSettingsTab = 0;
+               iSettingsTab = 0, iLuaTab = 0;
     PushFont(F::Render.FontBold);
 
     int iOldTab = m_iCurrentTab;
@@ -122,9 +124,10 @@ void CMenu::DrawMenu() {
                {"VISUALS", "ESP", "MISC##", "MENU"},
                {"MISC", "MAIN", "HVH"},
                {"LOGS", "PLAYERLIST", "SETTINGS##", "OUTPUT"},
-               {"SETTINGS", "CONFIG", "BINDS", "MATERIALS", "EXTRA"}},
+               {"SETTINGS", "CONFIG", "BINDS", "MATERIALS", "EXTRA"},
+               {"LUA", "STORE", "LOCAL"}},
               {&m_iCurrentTab, &iAimbotTab, &iVisualsTab, &iMiscTab, &iLogsTab,
-               &iSettingsTab},
+               &iSettingsTab, &iLuaTab},
               {H::Draw.Scale(flSideSize - 16), H::Draw.Scale(36)},
               {H::Draw.Scale(8), H::Draw.Scale(8) + flOffset},
               FTabsEnum::Vertical | FTabsEnum::HorizontalIcons |
@@ -133,7 +136,8 @@ void CMenu::DrawMenu() {
                {ICON_MD_VISIBILITY},
                {ICON_MD_ARTICLE},
                {ICON_MD_IMPORT_CONTACTS},
-               {ICON_MD_SETTINGS}},
+               {ICON_MD_SETTINGS},
+               {ICON_MD_CODE}},
               {H::Draw.Scale(10), 0}, {}, {}, {H::Draw.Scale(22), 0})) {
       if (m_iCurrentTab != iOldTab) {
         m_iNextTab = m_iCurrentTab;
@@ -194,6 +198,9 @@ void CMenu::DrawMenu() {
           break;
         case 4:
           MenuSettings(iSettingsTab);
+          break;
+        case 5:
+          MenuLua(iLuaTab);
           break;
         }
       } else
@@ -3933,6 +3940,52 @@ void CMenu::MenuSettings(int iTab) {
     }
     EndSection();
 #endif
+    break;
+  }
+  }
+}
+
+void CMenu::MenuLua(int iTab) {
+  using namespace ImGui;
+
+  switch (iTab) {
+  case 0: // Store
+  {
+    if (Section("Store")) {
+      FText("Script store coming soon...", FTextEnum::Middle);
+    }
+    EndSection();
+    break;
+  }
+  case 1: // Local
+  {
+    if (BeginTable("LuaTable", 2)) {
+      TableNextColumn();
+      if (Section("Controls")) {
+        if (FButton("Refresh list", FButtonEnum::None,
+                    {GetWindowWidth() - GetStyle().WindowPadding.x * 2, 40}))
+          F::Lua.RefreshScripts();
+        if (FButton("Open directory", FButtonEnum::None,
+                    {GetWindowWidth() - GetStyle().WindowPadding.x * 2, 40}))
+          F::Lua.OpenDirectory();
+      }
+      EndSection();
+
+      TableNextColumn();
+      if (Section("Scripts")) {
+        for (const auto &sScript : F::Lua.m_vScripts) {
+          if (FButton(
+                  sScript.c_str(), FButtonEnum::None,
+                  {GetWindowWidth() - GetStyle().WindowPadding.x * 2, 40})) {
+            F::Lua.LoadScript(sScript);
+          }
+        }
+        if (F::Lua.m_vScripts.empty())
+          FText("No scripts found", FTextEnum::Middle);
+      }
+      EndSection();
+      EndTable();
+    }
     break;
   }
   }
