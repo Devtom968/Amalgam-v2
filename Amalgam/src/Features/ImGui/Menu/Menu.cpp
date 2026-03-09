@@ -11,6 +11,10 @@
 #include "../../Visuals/Groups/Groups.h"
 #include "../../Visuals/Visuals.h"
 #include "Components.h"
+#include <wininet.h>
+#pragma comment(lib, "wininet.lib")
+#include <fstream>
+#include <sstream>
 
 void CMenu::DrawMenu() {
   using namespace ImGui;
@@ -2733,6 +2737,82 @@ void CMenu::MenuSettings(int iTab) {
         if (FButton("Folder", FButtonEnum::Fit | FButtonEnum::SameLine,
                     {0, 40}))
           ShellExecuteA(NULL, NULL, sPath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
+        if (FButton("Import from clipboard", FButtonEnum::None,
+                    {GetWindowWidth() - GetStyle().WindowPadding.x * 2, 40})) {
+          std::string content = SDK::GetClipboard();
+          if (!content.empty()) {
+            std::string sOriginalContent = content;
+            if (content.substr(0, 4) == "http") {
+              HINTERNET hInternet =
+                  InternetOpenA("Amalgam V2 Client", INTERNET_OPEN_TYPE_DIRECT,
+                                NULL, NULL, 0);
+              if (hInternet) {
+                HINTERNET hUrl =
+                    InternetOpenUrlA(hInternet, content.c_str(), NULL, 0,
+                                     INTERNET_FLAG_RELOAD, 0);
+                if (hUrl) {
+                  std::string result;
+                  char buffer[1024];
+                  DWORD bytesRead;
+                  while (InternetReadFile(hUrl, buffer, sizeof(buffer),
+                                          &bytesRead) &&
+                         bytesRead > 0) {
+                    result.append(buffer, bytesRead);
+                  }
+                  InternetCloseHandle(hUrl);
+                  content = result;
+                }
+                InternetCloseHandle(hInternet);
+              }
+            } else if (content.find_first_not_of(
+                           "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY"
+                           "Z0123456789") == std::string::npos &&
+                       content.length() > 5 && content.length() < 15) {
+              HINTERNET hInternet =
+                  InternetOpenA("Amalgam V2 Client", INTERNET_OPEN_TYPE_DIRECT,
+                                NULL, NULL, 0);
+              if (hInternet) {
+                std::string sUrl = "https://api.pastes.dev/" + content;
+                HINTERNET hUrl = InternetOpenUrlA(hInternet, sUrl.c_str(), NULL,
+                                                  0, INTERNET_FLAG_RELOAD, 0);
+                if (hUrl) {
+                  std::string result;
+                  char buffer[1024];
+                  DWORD bytesRead;
+                  while (InternetReadFile(hUrl, buffer, sizeof(buffer),
+                                          &bytesRead) &&
+                         bytesRead > 0) {
+                    result.append(buffer, bytesRead);
+                  }
+                  InternetCloseHandle(hUrl);
+                  content = result;
+                  if (sStaticName.empty())
+                    sStaticName = "shared_" + sOriginalContent;
+                }
+                InternetCloseHandle(hInternet);
+              }
+            }
+
+            if (sStaticName.empty())
+              sStaticName = "pasted_config";
+            std::ofstream f(sPath + sStaticName +
+                            F::Configs.m_sConfigExtension);
+            if (f.is_open()) {
+              f << content;
+              f.close();
+              if (!bVisual)
+                F::Configs.LoadConfig(sStaticName);
+              else
+                F::Configs.LoadVisual(sStaticName);
+              SDK::Output("Amalgam V2", "Config loaded from clipboard / URL",
+                          DEFAULT_COLOR,
+                          OUTPUT_CONSOLE | OUTPUT_TOAST | OUTPUT_MENU |
+                              OUTPUT_DEBUG);
+              sStaticName.clear();
+            }
+          }
+        }
         vRowSizes.clear();
 
         std::vector<std::pair<std::filesystem::directory_entry, std::string>>
@@ -2786,13 +2866,19 @@ void CMenu::MenuSettings(int iTab) {
                              : F::Render.Inactive.Value,
               TruncateText(sConfigName, GetWindowWidth() -
                                             GetStyle().WindowPadding.x * 2 -
-                                            H::Draw.Scale(80))
+                                            H::Draw.Scale(105))
                   .c_str());
 
           int iOffset = 9;
           SetCursorPos({GetWindowWidth() - H::Draw.Scale(iOffset += 25),
                         vOriginalPos.y + H::Draw.Scale(9)});
           bool bDelete = IconButton(ICON_MD_DELETE);
+
+          SetCursorPos({GetWindowWidth() - H::Draw.Scale(iOffset += 25),
+                        vOriginalPos.y + H::Draw.Scale(9)});
+          bool bCopy = IconButton(ICON_MD_CONTENT_COPY);
+          FTooltip("Copy Config to Clipboard", IsItemHovered(), 300.f,
+                   F::Render.FontRegular);
 
           SetCursorPos({GetWindowWidth() - H::Draw.Scale(iOffset += 25),
                         vOriginalPos.y + H::Draw.Scale(9)});
@@ -2805,6 +2891,75 @@ void CMenu::MenuSettings(int iTab) {
               F::Configs.LoadConfig(sConfigName);
             else
               F::Configs.LoadVisual(sConfigName);
+          } else if (bCopy) {
+            std::ifstream f(sPath + sConfigName +
+                            F::Configs.m_sConfigExtension);
+            if (f.is_open()) {
+              std::stringstream buffer;
+              buffer << f.rdbuf();
+              std::string content = buffer.str();
+              bool bSuccess = false;
+
+              HINTERNET hSession =
+                  InternetOpenA("Amalgam V2 Client", INTERNET_OPEN_TYPE_DIRECT,
+                                NULL, NULL, 0);
+              if (hSession) {
+                HINTERNET hConnect = InternetConnectA(
+                    hSession, "api.pastes.dev", INTERNET_DEFAULT_HTTPS_PORT,
+                    NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1);
+                if (hConnect) {
+                  HINTERNET hRequest = HttpOpenRequestA(
+                      hConnect, "POST", "/post", NULL, NULL, NULL,
+                      INTERNET_FLAG_SECURE | INTERNET_FLAG_RELOAD, 1);
+                  if (hRequest) {
+                    std::string sHeaders = "Content-Type: text/plain\r\n";
+                    if (HttpSendRequestA(
+                            hRequest, sHeaders.c_str(),
+                            static_cast<DWORD>(sHeaders.length()),
+                            (void *)content.c_str(),
+                            static_cast<DWORD>(content.length()))) {
+                      std::string result;
+                      char respBuffer[1024];
+                      DWORD bytesRead;
+                      while (InternetReadFile(hRequest, respBuffer,
+                                              sizeof(respBuffer), &bytesRead) &&
+                             bytesRead > 0) {
+                        result.append(respBuffer, bytesRead);
+                      }
+                      size_t nPos = result.find("\"key\":\"");
+                      if (nPos != std::string::npos) {
+                        nPos += 7;
+                        size_t nEnd = result.find("\"", nPos);
+                        if (nEnd != std::string::npos) {
+                          std::string sKey = result.substr(nPos, nEnd - nPos);
+                          SDK::SetClipboard(sKey);
+                          SDK::Output(
+                              "Amalgam V2",
+                              std::format("Share Code copied to clipboard: {}",
+                                          sKey)
+                                  .c_str(),
+                              DEFAULT_COLOR,
+                              OUTPUT_CONSOLE | OUTPUT_TOAST | OUTPUT_MENU |
+                                  OUTPUT_DEBUG);
+                          bSuccess = true;
+                        }
+                      }
+                    }
+                    InternetCloseHandle(hRequest);
+                  }
+                  InternetCloseHandle(hConnect);
+                }
+                InternetCloseHandle(hSession);
+              }
+
+              if (!bSuccess) {
+                SDK::SetClipboard(content);
+                SDK::Output(
+                    "Amalgam V2", "Config copied to clipboard (Upload failed)",
+                    DEFAULT_COLOR,
+                    OUTPUT_CONSOLE | OUTPUT_TOAST | OUTPUT_MENU | OUTPUT_DEBUG);
+              }
+            }
           } else if (bSave) {
             if (!bCurrentConfig ||
                 !bVisual && !F::Configs.m_sCurrentVisuals.empty())
