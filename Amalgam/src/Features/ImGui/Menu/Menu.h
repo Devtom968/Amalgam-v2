@@ -22,6 +22,7 @@ private:
   void MenuMisc(int iTab);
   void MenuLogs(int iTab);
   void MenuSettings(int iTab);
+  void MenuLua(int iTab);
   void MenuSearch(std::string sSearch);
 
   void AddDraggable(const char *sLabel, ConfigVar<DragBox_t> &var,
