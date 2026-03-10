@@ -3974,10 +3974,12 @@ void CMenu::MenuLua(int iTab) {
       TableNextColumn();
       if (Section("Scripts")) {
         for (const auto &sScript : F::Lua.m_vScripts) {
-          if (FButton(
-                  sScript.c_str(), FButtonEnum::None,
-                  {GetWindowWidth() - GetStyle().WindowPadding.x * 2, 40})) {
-            F::Lua.LoadScript(sScript);
+          bool active = F::Lua.m_mActiveScripts[sScript];
+          if (FToggle(sScript.c_str(), &active)) {
+            if (active)
+              F::Lua.LoadScript(sScript);
+            else
+              F::Lua.UnloadScript(sScript);
           }
         }
         if (F::Lua.m_vScripts.empty())
