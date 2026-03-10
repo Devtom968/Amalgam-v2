@@ -1,6 +1,7 @@
 #include "Render.h"
 
 #include "../../Hooks/Direct3DDevice9.h"
+#include "../Lua/Lua.h"
 #include "Fonts/CascadiaMono/CascadiaMono.h"
 #include "Fonts/MaterialDesign/IconDefinitions.h"
 #include "Fonts/MaterialDesign/MaterialIcons.h"
@@ -34,6 +35,7 @@ void CRender::Render(IDirect3DDevice9 *pDevice) {
   NewFrame();
 
   F::Menu.Render();
+  F::Lua.OnRender();
 
   EndFrame();
   ImGui::Render();
