@@ -1,5 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "WinHeaders.h"
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -75,6 +79,56 @@ ImU32 GetImColor(lua_State *L, int idx) {
   return IM_COL32(255, 255, 255, 255);
 }
 
+// Math Bindings
+int lua_math_floor(lua_State *L) {
+  lua_pushnumber(L, std::floor(luaL_checknumber(L, 1)));
+  return 1;
+}
+
+int lua_math_sin(lua_State *L) {
+  lua_pushnumber(L, std::sin(luaL_checknumber(L, 1)));
+  return 1;
+}
+
+int lua_math_cos(lua_State *L) {
+  lua_pushnumber(L, std::cos(luaL_checknumber(L, 1)));
+  return 1;
+}
+
+int lua_math_abs(lua_State *L) {
+  lua_pushnumber(L, std::abs(luaL_checknumber(L, 1)));
+  return 1;
+}
+
+int lua_math_sqrt(lua_State *L) {
+  lua_pushnumber(L, std::sqrt(luaL_checknumber(L, 1)));
+  return 1;
+}
+
+int lua_math_min(lua_State *L) {
+  int n = lua_gettop(L);
+  double m = luaL_checknumber(L, 1);
+  for (int i = 2; i <= n; i++) {
+    double d = luaL_checknumber(L, i);
+    if (d < m)
+      m = d;
+  }
+  lua_pushnumber(L, m);
+  return 1;
+}
+
+int lua_math_max(lua_State *L) {
+  int n = lua_gettop(L);
+  double m = luaL_checknumber(L, 1);
+  for (int i = 2; i <= n; i++) {
+    double d = luaL_checknumber(L, i);
+    if (d > m)
+      m = d;
+  }
+  lua_pushnumber(L, m);
+  return 1;
+}
+
 // Draw Bindings using ImGui DrawList (Thread-safe)
 int lua_draw_line(lua_State *L) {
   float x1 = (float)luaL_checknumber(L, 1);
@@ -94,10 +148,10 @@ int lua_draw_rect(lua_State *L) {
   ImU32 color = GetImColor(L, 5);
   bool filled = lua_toboolean(L, 6);
   if (filled)
-    ImGui::GetBackgroundDrawList()->AddRectFilled({x, y}, {x + w, y + h},
-                                                  color);
+    ImGui::GetBackgroundDrawList()->AddRectFilled({x, y}, {x + w, y + h}, color,
+                                                  4.f);
   else
-    ImGui::GetBackgroundDrawList()->AddRect({x, y}, {x + w, y + h}, color);
+    ImGui::GetBackgroundDrawList()->AddRect({x, y}, {x + w, y + h}, color, 4.f);
   return 0;
 }
 
@@ -115,6 +169,30 @@ int lua_draw_get_screen_size(lua_State *L) {
   lua_pushnumber(L, size.x);
   lua_pushnumber(L, size.y);
   return 2;
+}
+
+// Globals Bindings (Time, FPS)
+int lua_globals_get_time(lua_State *L) {
+  auto now = std::chrono::system_clock::now();
+  std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+  std::tm *local_time = std::localtime(&now_time);
+  char buffer[80];
+  if (local_time)
+    std::strftime(buffer, 80, "%H:%M:%S", local_time);
+  else
+    strcpy(buffer, "00:00:00");
+  lua_pushstring(L, buffer);
+  return 1;
+}
+
+int lua_globals_get_fps(lua_State *L) {
+  lua_pushinteger(L, (int)ImGui::GetIO().Framerate);
+  return 1;
+}
+
+int lua_globals_get_realtime(lua_State *L) {
+  lua_pushnumber(L, (double)I::GlobalVars->realtime);
+  return 1;
 }
 
 // Vars Bindings
@@ -418,6 +496,28 @@ void CLua::RegisterFunctions() {
   lua_pushcclosure(m_pState, lua_print, 0);
   lua_setfield(m_pState, LUA_GLOBALSINDEX, "print");
 
+  // Math Table
+  lua_newtable(m_pState);
+  {
+    lua_pushcfunction(m_pState, lua_math_floor);
+    lua_setfield(m_pState, -2, "floor");
+    lua_pushcfunction(m_pState, lua_math_sin);
+    lua_setfield(m_pState, -2, "sin");
+    lua_pushcfunction(m_pState, lua_math_cos);
+    lua_setfield(m_pState, -2, "cos");
+    lua_pushcfunction(m_pState, lua_math_abs);
+    lua_setfield(m_pState, -2, "abs");
+    lua_pushcfunction(m_pState, lua_math_sqrt);
+    lua_setfield(m_pState, -2, "sqrt");
+    lua_pushcfunction(m_pState, lua_math_min);
+    lua_setfield(m_pState, -2, "min");
+    lua_pushcfunction(m_pState, lua_math_max);
+    lua_setfield(m_pState, -2, "max");
+    lua_pushnumber(m_pState, 3.14159265358979323846);
+    lua_setfield(m_pState, -2, "pi");
+  }
+  lua_setfield(m_pState, LUA_GLOBALSINDEX, "math");
+
   // Draw Table
   lua_newtable(m_pState);
   {
@@ -431,6 +531,18 @@ void CLua::RegisterFunctions() {
     lua_setfield(m_pState, -2, "GetScreenSize");
   }
   lua_setfield(m_pState, LUA_GLOBALSINDEX, "draw");
+
+  // Globals Table
+  lua_newtable(m_pState);
+  {
+    lua_pushcfunction(m_pState, lua_globals_get_time);
+    lua_setfield(m_pState, -2, "GetTime");
+    lua_pushcfunction(m_pState, lua_globals_get_fps);
+    lua_setfield(m_pState, -2, "GetFPS");
+    lua_pushcfunction(m_pState, lua_globals_get_realtime);
+    lua_setfield(m_pState, -2, "GetRealtime");
+  }
+  lua_setfield(m_pState, LUA_GLOBALSINDEX, "globals");
 
   // Vars Table
   lua_newtable(m_pState);
