@@ -309,6 +309,7 @@ void CMenu::MenuAimbot(int iTab) {
                     FDropdownEnum::Right);
           FDropdown(Vars::Aimbot::Hitscan::Modifiers);
           FSlider(Vars::Aimbot::Hitscan::MultipointScale);
+          FSlider(Vars::Aimbot::Hitscan::HitChance);
           PushTransparent(!(Vars::Aimbot::Hitscan::Modifiers.Value &
                             Vars::Aimbot::Hitscan::ModifiersEnum::Tapfire));
           {
