@@ -78,6 +78,17 @@ static inline std::vector<Target_t> GetTargets(CTFPlayer *pLocal,
         break;
       }
 
+      switch (Vars::Aimbot::General::TargetSelection.Value) {
+      case Vars::Aimbot::General::TargetSelectionEnum::Health:
+        iPriority += Math::RemapVal(float(pPlayer->m_iHealth()), 0.f, float(pPlayer->GetMaxHealth()), 10, 0);
+        break;
+      case Vars::Aimbot::General::TargetSelectionEnum::Lethal:
+        int iDamage = pWeapon->GetDamage();
+        if (pPlayer->m_iHealth() <= iDamage)
+          iPriority += 10;
+        break;
+      }
+
       if (bTeam && bHeal) {
         iPriority = 0;
         switch (Vars::Aimbot::Healing::HealPriority.Value) {
@@ -239,6 +250,14 @@ int CAimbotHitscan::GetHitboxPriority(int nHitbox, CTFPlayer *pLocal,
         }
       }
       }
+    }
+
+    if (bHeadshot && pTarget->IsPlayer()) {
+      auto pPlayer = pTarget->As<CTFPlayer>();
+      if (Vars::Aimbot::Hitscan::Hitboxes.Value & Vars::Aimbot::Hitscan::HitboxesEnum::BodyaimIfInAir && !pPlayer->IsOnGround())
+        bHeadshot = false;
+      if (Vars::Aimbot::Hitscan::Hitboxes.Value & Vars::Aimbot::Hitscan::HitboxesEnum::BodyaimIfSlow && pPlayer->m_vecVelocity().Length2D() < 100.f)
+        bHeadshot = false;
     }
   }
 
@@ -501,7 +520,10 @@ int CAimbotHitscan::CanHit(Target_t &tTarget, CTFPlayer *pLocal,
                        // Faces
                        Vec3(vMinsS.x, 0, 0), Vec3(vMaxsS.x, 0, 0),
                        Vec3(0, vMinsS.y, 0), Vec3(0, vMaxsS.y, 0),
-                       Vec3(0, 0, vMinsS.z), Vec3(0, 0, vMaxsS.z)};
+                       Vec3(0, 0, vMinsS.z), Vec3(0, 0, vMaxsS.z),
+                       // Intermediate points
+                       Vec3(vMinsS.x, 0, vMaxsS.z), Vec3(vMaxsS.x, 0, vMaxsS.z),
+                       Vec3(0, vMinsS.y, vMaxsS.z), Vec3(0, vMaxsS.y, vMaxsS.z)};
           }
         }
 
@@ -712,6 +734,11 @@ bool CAimbotHitscan::ShouldFire(CTFPlayer *pLocal, CTFWeaponBase *pWeapon,
       return false;
     }
     }
+  }
+
+  if (Vars::Aimbot::Hitscan::HitChance.Value && pWeapon->GetWeaponSpread()) {
+    if (SDK::GetHitchance(tTarget.m_vAngleTo, tTarget.m_pEntity, pLocal, pWeapon) < Vars::Aimbot::Hitscan::HitChance.Value)
+      return false;
   }
 
   return true;

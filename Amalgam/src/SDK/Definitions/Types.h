@@ -831,6 +831,9 @@ struct Color_t
 {
 	byte r = 255, g = 255, b = 255, a = 255;
 
+	inline Color_t() {}
+	inline Color_t(byte r, byte g, byte b, byte a = 255) : r(r), g(g), b(b), a(a) {}
+
 	inline void SetRGB(float flR = 255.f, float flG = 255.f, float flB = 255.f, float flA = 255.f)
 	{
 		r = byte(std::clamp(flR, 0.f, 255.f));
@@ -1048,6 +1051,9 @@ struct DragBox_t
 {
 	int x = 150;
 	int y = 100;
+
+	inline DragBox_t() {}
+	inline DragBox_t(int x, int y) : x(x), y(y) {}
 
 	inline bool operator==(const DragBox_t& t) const
 	{

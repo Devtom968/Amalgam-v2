@@ -94,6 +94,8 @@ namespace SDK
 	std::string ConvertWideToUTF8(const std::wstring& source);
 
 	HWND GetTeamFortressWindow();
+	float GetHitchance(const Vec3& vAngles, CBaseEntity* pEntity, CTFPlayer* pLocal, CTFWeaponBase* pWeapon);
+	float GetWeaponSpread(CTFWeaponBase* pWeapon);
 	bool IsGameWindowInFocus();
 
 	double PlatFloatTime();

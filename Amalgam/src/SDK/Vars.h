@@ -289,7 +289,7 @@ CVarEnum(AimType, "Aim type", 0, NONE, nullptr,
          VA_LIST("Off", "Plain", "Smooth", "Silent", "Locking", "Assistive"),
          Off, Plain, Smooth, Silent, Locking, Assistive);
 CVarEnum(TargetSelection, "Target selection", 0, NONE, nullptr,
-         VA_LIST("FOV", "Distance", "Hybrid"), FOV, Distance, Hybrid);
+         VA_LIST("FOV", "Distance", "Health", "Lethal", "Hybrid"), FOV, Distance, Health, Lethal, Hybrid);
 CVarEnum(Target, "Target", 0b0000001, DROPDOWN_MULTI, nullptr,
          VA_LIST("Players", "Sentries", "Dispensers", "Teleporters", "Stickies",
                  "NPCs", "Bombs"),
@@ -332,9 +332,10 @@ NAMESPACE_BEGIN(Hitscan)
 CVarEnum(Hitboxes, VA_LIST("Hitboxes", "Hitscan hitboxes"), 0b000111,
          DROPDOWN_MULTI, nullptr,
          VA_LIST("Head", "Body", "Pelvis", "Arms", "Legs", "##Divider",
-                 "Bodyaim if lethal", "Headshot only"),
+                 "Bodyaim if lethal", "Bodyaim if in air", "Bodyaim if slow", "Headshot only"),
          Head = 1 << 0, Body = 1 << 1, Pelvis = 1 << 2, Arms = 1 << 3,
-         Legs = 1 << 4, BodyaimIfLethal = 1 << 5, HeadshotOnly = 1 << 6);
+         Legs = 1 << 4, BodyaimIfLethal = 1 << 5, BodyaimIfInAir = 1 << 6,
+         BodyaimIfSlow = 1 << 7, HeadshotOnly = 1 << 8);
 CVarValues(MultipointHitboxes, "Multipoint hitboxes", 0b00000, DROPDOWN_MULTI,
            "All", VA_LIST("Head", "Body", "Pelvis", "Arms", "Legs"));
 CVarEnum(Modifiers, VA_LIST("Modifiers", "Hitscan modifiers"), 0b0100000,
@@ -347,6 +348,8 @@ CVarEnum(Modifiers, VA_LIST("Modifiers", "Hitscan modifiers"), 0b0100000,
          ExtinguishTeam = 1 << 6);
 CVar(MultipointScale, "Multipoint scale", 0.f, SLIDER_CLAMP | SLIDER_PRECISION,
      0.f, 100.f, 5.f, "%g%%");
+CVar(HitChance, "Hit chance", 0.f, SLIDER_CLAMP | SLIDER_PRECISION, 0.f, 100.f,
+     5.f, "%g%%");
 CVar(TapfireDistance, "Tapfire distance", 1000.f, SLIDER_MIN | SLIDER_PRECISION,
      250.f, 1000.f, 50.f);
 

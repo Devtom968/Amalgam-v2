@@ -162,6 +162,43 @@ double SDK::PlatFloatTime()
 	return Plat_FloatTime();
 }
 
+float SDK::GetHitchance(const Vec3& vAngles, CBaseEntity* pEntity, CTFPlayer* pLocal, CTFWeaponBase* pWeapon)
+{
+	float flSpread = pWeapon->GetWeaponSpread();
+	if (flSpread < 0.0001f)
+		return 100.f;
+
+	const Vec3 vStart = pLocal->GetShootPos();
+	Vec3 vForward, vRight, vUp;
+	Math::AngleVectors(vAngles, &vForward, &vRight, &vUp);
+
+	int iHits = 0;
+	const int iCheckCount = 100;
+	for (int i = 0; i < iCheckCount; i++)
+	{
+		float flX = StdRandomFloat(-0.5f, 0.5f) + StdRandomFloat(-0.5f, 0.5f);
+		float flY = StdRandomFloat(-0.5f, 0.5f) + StdRandomFloat(-0.5f, 0.5f);
+
+		Vec3 vDir = vForward + (vRight * flX * flSpread) + (vUp * flY * flSpread);
+		vDir.Normalize();
+
+		CGameTrace trace = {};
+		CTraceFilterHitscan filter = {};
+		filter.pSkip = pLocal;
+		Trace(vStart, vStart + vDir * 8192.f, MASK_SHOT, &filter, &trace);
+
+		if (trace.m_pEnt == pEntity)
+			iHits++;
+	}
+
+	return (float)iHits / (float)iCheckCount * 100.f;
+}
+
+float SDK::GetWeaponSpread(CTFWeaponBase* pWeapon)
+{
+	return pWeapon->GetWeaponSpread();
+}
+
 int SDK::StdRandomInt(int iMin, int iMax)
 {
 	std::random_device rd;

@@ -75,6 +75,19 @@ static inline std::vector<Target_t> GetTargets(CTFPlayer *pLocal,
 
       float flDistTo = vLocalPos.DistTo(vPos);
       int iPriority = F::AimbotGlobal.GetPriority(pEntity->entindex());
+
+      auto pPlayer = pEntity->As<CTFPlayer>();
+      switch (Vars::Aimbot::General::TargetSelection.Value) {
+      case Vars::Aimbot::General::TargetSelectionEnum::Health:
+        iPriority += Math::RemapVal(float(pPlayer->m_iHealth()), 0.f, float(pPlayer->GetMaxHealth()), 10, 0);
+        break;
+      case Vars::Aimbot::General::TargetSelectionEnum::Lethal:
+        int iDamage = pWeapon->GetDamage();
+        if (pPlayer->m_iHealth() <= iDamage)
+          iPriority += 10;
+        break;
+      }
+
       if (bTeam && bHeal) {
         iPriority = 0;
         switch (Vars::Aimbot::Healing::HealPriority.Value) {
