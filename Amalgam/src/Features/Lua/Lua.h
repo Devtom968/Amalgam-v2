@@ -21,7 +21,11 @@ public:
   void UnloadScript(std::string sName);
   void RunScript(std::string sName, const std::string &sScript);
   void RegisterFunctions();
+
+  // Callbacks
   void OnRender();
+  void OnCreateMove(CUserCmd *pCmd);
+  void OnFrameStageNotify(ClientFrameStage_t curStage);
 
   std::vector<std::string> m_vScripts;
   std::unordered_map<std::string, bool> m_mActiveScripts;

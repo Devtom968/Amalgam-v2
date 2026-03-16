@@ -125,7 +125,7 @@ void CMenu::DrawMenu() {
                {"MISC", "MAIN", "HVH"},
                {"LOGS", "PLAYERLIST", "SETTINGS##", "OUTPUT"},
                {"SETTINGS", "CONFIG", "BINDS", "MATERIALS", "EXTRA"},
-               {"LUA", "STORE", "LOCAL"}},
+               {"LUA", "LOCAL"}},
               {&m_iCurrentTab, &iAimbotTab, &iVisualsTab, &iMiscTab, &iLogsTab,
                &iSettingsTab, &iLuaTab},
               {H::Draw.Scale(flSideSize - 16), H::Draw.Scale(36)},
@@ -3948,48 +3948,34 @@ void CMenu::MenuSettings(int iTab) {
 void CMenu::MenuLua(int iTab) {
   using namespace ImGui;
 
-  switch (iTab) {
-  case 0: // Store
-  {
-    if (Section("Store")) {
-      FText("Script store coming soon...", FTextEnum::Middle);
+  if (BeginTable("LuaTable", 2)) {
+    TableNextColumn();
+    if (Section("Controls")) {
+      if (FButton("Refresh list", FButtonEnum::None,
+                  {GetWindowWidth() - GetStyle().WindowPadding.x * 2, 40}))
+        F::Lua.RefreshScripts();
+      if (FButton("Open directory", FButtonEnum::None,
+                  {GetWindowWidth() - GetStyle().WindowPadding.x * 2, 40}))
+        F::Lua.OpenDirectory();
     }
     EndSection();
-    break;
-  }
-  case 1: // Local
-  {
-    if (BeginTable("LuaTable", 2)) {
-      TableNextColumn();
-      if (Section("Controls")) {
-        if (FButton("Refresh list", FButtonEnum::None,
-                    {GetWindowWidth() - GetStyle().WindowPadding.x * 2, 40}))
-          F::Lua.RefreshScripts();
-        if (FButton("Open directory", FButtonEnum::None,
-                    {GetWindowWidth() - GetStyle().WindowPadding.x * 2, 40}))
-          F::Lua.OpenDirectory();
-      }
-      EndSection();
 
-      TableNextColumn();
-      if (Section("Scripts")) {
-        for (const auto &sScript : F::Lua.m_vScripts) {
-          bool active = F::Lua.m_mActiveScripts[sScript];
-          if (FToggle(sScript.c_str(), &active)) {
-            if (active)
-              F::Lua.LoadScript(sScript);
-            else
-              F::Lua.UnloadScript(sScript);
-          }
+    TableNextColumn();
+    if (Section("Scripts")) {
+      for (const auto &sScript : F::Lua.m_vScripts) {
+        bool active = F::Lua.m_mActiveScripts[sScript];
+        if (FToggle(sScript.c_str(), &active)) {
+          if (active)
+            F::Lua.LoadScript(sScript);
+          else
+            F::Lua.UnloadScript(sScript);
         }
-        if (F::Lua.m_vScripts.empty())
-          FText("No scripts found", FTextEnum::Middle);
       }
-      EndSection();
-      EndTable();
+      if (F::Lua.m_vScripts.empty())
+        FText("No scripts found", FTextEnum::Middle);
     }
-    break;
-  }
+    EndSection();
+    EndTable();
   }
 }
 

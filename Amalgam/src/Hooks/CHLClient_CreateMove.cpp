@@ -13,6 +13,7 @@
 #include "../Features/Visuals/Visuals.h"
 #include "../Features/Visuals/FakeAngle/FakeAngle.h"
 #include "../Features/Spectate/Spectate.h"
+#include "../Features/Lua/Lua.h"
 
 #define MATH_EPSILON (1.f / 16)
 #define PSILENT_EPSILON (1.f - MATH_EPSILON)
@@ -258,6 +259,7 @@ MAKE_HOOK(CHLClient_CreateMove, U::Memory.GetVirtual(I::Client, 21), void,
 		F::Misc.RunPost(pLocal, pCmd);
 		F::PacketManip.Run(pLocal, pWeapon, pCmd, pSendPacket);
 		F::Visuals.CreateMove(pLocal, pWeapon);
+		F::Lua.OnCreateMove(pCmd);
 		F::Ticks.CreateMove(pLocal, pWeapon, pCmd, pSendPacket);
 		F::AntiAim.Run(pLocal, pWeapon, pCmd, *pSendPacket);
 		F::NoSpreadHitscan.AskForPlayerPerf();

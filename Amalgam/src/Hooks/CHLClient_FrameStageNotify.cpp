@@ -14,6 +14,7 @@
 #include "../Features/Visuals/Glow/Glow.h"
 #include "../Features/Visuals/Groups/Groups.h"
 #include "../Features/Visuals/OffscreenArrows/OffscreenArrows.h"
+#include "../Features/Lua/Lua.h"
 
 MAKE_HOOK(CHLClient_FrameStageNotify, U::Memory.GetVirtual(I::Client, 35), void,
 	void* rcx, ClientFrameStage_t curStage)
@@ -24,6 +25,7 @@ MAKE_HOOK(CHLClient_FrameStageNotify, U::Memory.GetVirtual(I::Client, 35), void,
 		return CALL_ORIGINAL(rcx, curStage);
 
 	CALL_ORIGINAL(rcx, curStage);
+	F::Lua.OnFrameStageNotify(curStage);
 
 	switch (curStage)
 	{
