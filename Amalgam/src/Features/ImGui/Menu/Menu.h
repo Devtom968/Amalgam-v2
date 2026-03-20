@@ -1,0 +1,58 @@
+#pragma once
+#include "../../../SDK/SDK.h"
+#include "../Render.h"
+#include <imgui/TextEditor.h>
+#include <imgui/imgui.h>
+#include <mutex>
+
+struct Output_t {
+  std::string m_sFunction;
+  std::string m_sLog;
+  size_t m_iID;
+
+  Color_t tAccent;
+};
+
+class CMenu {
+private:
+  void DrawMenu();
+
+  void MenuAimbot(int iTab);
+  void MenuVisuals(int iTab);
+  void MenuMisc(int iTab);
+  void MenuLogs(int iTab);
+  void MenuSettings(int iTab);
+  void MenuLua(int iTab);
+  void MenuSearch(std::string sSearch);
+
+  void AddDraggable(const char *sLabel, ConfigVar<DragBox_t> &var,
+                    bool bShouldDraw = true,
+                    ImVec2 vSize = {H::Draw.Scale(100), H::Draw.Scale(40)});
+  void AddResizableDraggable(
+      const char *sLabel, ConfigVar<WindowBox_t> &var, bool bShouldDraw = true,
+      ImVec2 vMinSize = {H::Draw.Scale(100), H::Draw.Scale(100)},
+      ImVec2 vMaxSize = {H::Draw.Scale(1000), H::Draw.Scale(1000)},
+      ImGuiSizeCallback fCustomCallback = nullptr);
+  void DrawBinds();
+
+  std::deque<Output_t> m_vOutput = {};
+  size_t m_iMaxOutputSize = 1000;
+
+  float m_flMenuAlpha = 0.f;
+  int m_iCurrentTab = 0;
+  float m_flTabAlpha = 1.f;
+  int m_iNextTab = 0;
+
+public:
+  void Render();
+  void AddOutput(const char *sFunction, const char *sLog,
+                 Color_t tColor = Vars::Menu::Theme::Accent.Value);
+
+  bool m_bIsOpen = false;
+  bool m_bInKeybind = false;
+  bool m_bWindowHovered = false;
+
+  std::mutex m_tMutex;
+};
+
+ADD_FEATURE(CMenu, Menu);

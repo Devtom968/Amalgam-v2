@@ -1,0 +1,214 @@
+#pragma once
+#include "../../../SDK/SDK.h"
+
+Enum(ProjSim,
+	None = 0,
+	Redirect = 1 << 0, // redirect and possibly trace when doing GetProjectileFireSetup
+	InitCheck = 1 << 1, // validate starting position
+	Interp = 1 << 2, // use interpolation
+	NoRandomAngles = 1 << 3, // don't do angle stuff for aimbot, nospread will pick that up
+	PredictCmdNum = 1 << 4, // use crithack to predict command number
+	MaxSpeed = 1 << 5 // default projectile speeds to their maximum
+)
+
+#define GRENADE_CHECK_INTERVAL 0.195f
+
+struct ProjectileInfo
+{
+	CTFPlayer* m_pOwner = nullptr;
+	CTFWeaponBase* m_pWeapon = nullptr;
+	uint32_t m_uType = 0;
+
+	Vec3 m_vPos = {};
+	Vec3 m_vAng = {};
+	Vec3 m_vHull = {};
+
+	float m_flVelocity = 0.f;
+	float m_flGravity = 0.f;
+	float m_flLifetime = 60.f;
+
+	std::vector<Vec3> m_vPath = {};
+
+	int m_iFlags = 0;
+};
+
+class CProjectileSimulation
+{
+private:
+	bool GetInfoMain(CTFPlayer* pPlayer, CTFWeaponBase* pWeapon, Vec3 vAngles, ProjectileInfo& tProjInfo, int iFlags, float flAutoCharge);
+
+	const objectparams_t m_tPhysDefaultObjectParams = {
+		NULL,
+		1.0, //mass
+		1.0, // inertia
+		0.1f, // damping
+		0.1f, // rotdamping
+		0.05f, // rotIntertiaLimit
+		"DEFAULT",
+		NULL,// game data
+		0.f, // volume (leave 0 if you don't have one or call physcollision->CollideVolume() to compute it)
+		1.0f, // drag coefficient
+		true,// enable collisions?
+	};
+
+public:
+	bool GetInfo(CTFPlayer* pPlayer, CTFWeaponBase* pWeapon, Vec3 vAngles, ProjectileInfo& tProjInfo, int iFlags = ProjSimEnum::Redirect | ProjSimEnum::InitCheck, float flAutoCharge = -1.f);
+	void SetupTrace(CTraceFilterCollideable& filter, int& nMask, CTFWeaponBase* pWeapon, int nTick = 0, bool bInterp = false);
+
+	void GetInfo(CBaseEntity* pProjectile, ProjectileInfo& tProjInfo);
+	void SetupTrace(CTraceFilterCollideable& filter, int& nMask, CBaseEntity* pProjectile);
+
+	bool Initialize(ProjectileInfo& tProjInfo, bool bSimulate = true, bool bWorld = false);
+	void RunTick(ProjectileInfo& tProjInfo, bool bPath = true);
+	Vec3 GetOrigin();
+	Vec3 GetVelocity();
+	float GetDesync();
+
+	inline std::pair<CTFWeaponBase*, CTFPlayer*> GetEntities(CBaseEntity* pProjectile)
+	{
+		std::pair<CTFWeaponBase*, CTFPlayer*> paReturn;
+		switch (pProjectile->GetClassID())
+		{
+		case ETFClassID::CBaseGrenade:
+		case ETFClassID::CTFWeaponBaseGrenadeProj:
+		case ETFClassID::CTFWeaponBaseMerasmusGrenade:
+		case ETFClassID::CTFGrenadePipebombProjectile:
+		case ETFClassID::CTFStunBall:
+		case ETFClassID::CTFBall_Ornament:
+		case ETFClassID::CTFProjectile_Jar:
+		case ETFClassID::CTFProjectile_Cleaver:
+		case ETFClassID::CTFProjectile_JarGas:
+		case ETFClassID::CTFProjectile_JarMilk:
+		case ETFClassID::CTFProjectile_SpellBats:
+		case ETFClassID::CTFProjectile_SpellKartBats:
+		case ETFClassID::CTFProjectile_SpellMeteorShower:
+		case ETFClassID::CTFProjectile_SpellMirv:
+		case ETFClassID::CTFProjectile_SpellPumpkin:
+		case ETFClassID::CTFProjectile_SpellSpawnBoss:
+		case ETFClassID::CTFProjectile_SpellSpawnHorde:
+		case ETFClassID::CTFProjectile_SpellSpawnZombie:
+		case ETFClassID::CTFProjectile_SpellTransposeTeleport:
+		case ETFClassID::CTFProjectile_Throwable:
+		case ETFClassID::CTFProjectile_ThrowableBreadMonster:
+		case ETFClassID::CTFProjectile_ThrowableBrick:
+		case ETFClassID::CTFProjectile_ThrowableRepel:
+		{
+			paReturn.first = pProjectile->As<CTFGrenadePipebombProjectile>()->m_hOriginalLauncher()->As<CTFWeaponBase>();
+			paReturn.second = pProjectile->As<CTFWeaponBaseGrenadeProj>()->m_hThrower()->As<CTFPlayer>();
+			break;
+		}
+		case ETFClassID::CTFBaseRocket:
+		case ETFClassID::CTFFlameRocket:
+		case ETFClassID::CTFProjectile_Arrow:
+		case ETFClassID::CTFProjectile_GrapplingHook:
+		case ETFClassID::CTFProjectile_HealingBolt:
+		case ETFClassID::CTFProjectile_Rocket:
+		case ETFClassID::CTFProjectile_BallOfFire:
+		case ETFClassID::CTFProjectile_MechanicalArmOrb:
+		case ETFClassID::CTFProjectile_SpellFireball:
+		case ETFClassID::CTFProjectile_SpellLightningOrb:
+		case ETFClassID::CTFProjectile_SpellKartOrb:
+		case ETFClassID::CTFProjectile_EnergyBall:
+		case ETFClassID::CTFProjectile_Flare:
+		{
+			paReturn.first = pProjectile->As<CTFBaseRocket>()->m_hLauncher()->As<CTFWeaponBase>();
+			paReturn.second = paReturn.first ? paReturn.first->m_hOwner()->As<CTFPlayer>() : nullptr;
+			break;
+		}
+		case ETFClassID::CTFBaseProjectile:
+		case ETFClassID::CTFProjectile_EnergyRing:
+		//case ETFClassID::CTFProjectile_Syringe:
+		{
+			paReturn.first = pProjectile->As<CTFBaseProjectile>()->m_hLauncher()->As<CTFWeaponBase>();
+			paReturn.second = paReturn.first ? paReturn.first->m_hOwner()->As<CTFPlayer>() : nullptr;
+			break;
+		}
+		case ETFClassID::CTFProjectile_SentryRocket:
+		{
+			auto pBuilding = pProjectile->As<CTFBaseRocket>()->m_hOwnerEntity()->As<CBaseObject>();
+			paReturn.second = pBuilding ? pBuilding->m_hBuilder()->As<CTFPlayer>() : nullptr;
+			break;
+		}
+		}
+		return paReturn;
+	}
+	inline Vec3 GetVelocity(CBaseEntity* pProjectile)
+	{
+		switch (pProjectile->GetClassID())
+		{
+		case ETFClassID::CTFBaseRocket:
+		case ETFClassID::CTFFlameRocket:
+		case ETFClassID::CTFProjectile_GrapplingHook:
+		case ETFClassID::CTFProjectile_Rocket:
+		case ETFClassID::CTFProjectile_BallOfFire:
+		case ETFClassID::CTFProjectile_SentryRocket:
+		case ETFClassID::CTFProjectile_EnergyBall:
+			if (!pProjectile->As<CTFBaseRocket>()->m_iDeflected())
+				return pProjectile->As<CTFBaseRocket>()->m_vInitialVelocity();
+			break;
+		case ETFClassID::CTFProjectile_Arrow:
+		case ETFClassID::CTFProjectile_HealingBolt:
+		case ETFClassID::CTFProjectile_Flare:
+			if (!pProjectile->As<CTFBaseRocket>()->m_iDeflected())
+				return {
+					pProjectile->As<CTFBaseRocket>()->m_vInitialVelocity().x,
+					pProjectile->As<CTFBaseRocket>()->m_vInitialVelocity().y,
+					pProjectile->GetAbsVelocity().z
+				};
+			break;
+		}
+		return pProjectile->GetAbsVelocity();
+	}
+	inline float GetGravity(CBaseEntity* pProjectile, CTFWeaponBase* pWeapon = nullptr)
+	{
+		float flReturn = 0.f;
+
+		static auto sv_gravity = H::ConVars.FindVar("sv_gravity");
+		float flGravity = sv_gravity->GetFloat() / 800.f;
+		switch (pProjectile->GetClassID())
+		{
+		case ETFClassID::CBaseGrenade:
+		case ETFClassID::CTFWeaponBaseGrenadeProj:
+		case ETFClassID::CTFWeaponBaseMerasmusGrenade:
+		case ETFClassID::CTFGrenadePipebombProjectile:
+		case ETFClassID::CTFStunBall:
+		case ETFClassID::CTFBall_Ornament:
+		case ETFClassID::CTFProjectile_Jar:
+		case ETFClassID::CTFProjectile_Cleaver:
+		case ETFClassID::CTFProjectile_JarGas:
+		case ETFClassID::CTFProjectile_JarMilk:
+		case ETFClassID::CTFProjectile_SpellBats:
+		case ETFClassID::CTFProjectile_SpellKartBats:
+		case ETFClassID::CTFProjectile_SpellMeteorShower:
+		case ETFClassID::CTFProjectile_SpellMirv:
+		case ETFClassID::CTFProjectile_SpellPumpkin:
+		case ETFClassID::CTFProjectile_SpellSpawnBoss:
+		case ETFClassID::CTFProjectile_SpellSpawnHorde:
+		case ETFClassID::CTFProjectile_SpellSpawnZombie:
+		case ETFClassID::CTFProjectile_SpellTransposeTeleport:
+		case ETFClassID::CTFProjectile_Throwable:
+		case ETFClassID::CTFProjectile_ThrowableBreadMonster:
+		case ETFClassID::CTFProjectile_ThrowableBrick:
+		case ETFClassID::CTFProjectile_ThrowableRepel:
+			flReturn = 1.f;
+			break;
+		case ETFClassID::CTFProjectile_HealingBolt:
+			flReturn = 0.2f * flGravity;
+			break;
+		case ETFClassID::CTFProjectile_Flare:
+			flReturn = (pWeapon && pWeapon->As<CTFFlareGun>()->GetFlareGunType() == FLAREGUN_GRORDBORT ? 0.45f : 0.3f) * flGravity;
+			break;
+		case ETFClassID::CTFProjectile_Arrow:
+			flReturn = pProjectile->As<CTFProjectile_Arrow>()->CanHeadshot()
+				? Math::RemapVal(pProjectile->As<CTFProjectile_Arrow>()->m_vInitialVelocity().Length(), 1800.f, 2600.f, 0.5f, 0.1f) * flGravity
+				: 0.2f * flGravity;
+			break;
+		}
+		return flReturn;
+	}
+
+	IPhysicsEnvironment* m_pEnv = nullptr;
+	IPhysicsObject* m_pObj = nullptr;
+};
+
+ADD_FEATURE(CProjectileSimulation, ProjSim);
