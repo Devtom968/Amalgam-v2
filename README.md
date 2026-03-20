@@ -1,4 +1,3 @@
-
 <div align="center">
 
 <img src=".github/assets/amalgam_combo.png" alt="Amalgam V2 Logo" height="120">
