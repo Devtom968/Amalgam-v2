@@ -10,9 +10,9 @@ Modernized and enhanced version of the original Amalgam project.
 **Credit:**  
 Original Project by [rei-2](https://github.com/rei-2/Amalgam)
 
-[![Stars](https://img.shields.io/github/stars/DEVXeno-ops/Amalgam-v2?style=for-the-badge&logo=github)](https://github.com/DEVXeno-ops/Amalgam-v2/stargazers)
-[![Forks](https://img.shields.io/github/forks/DEVXeno-ops/Amalgam-v2?style=for-the-badge&logo=github)](https://github.com/DEVXeno-ops/Amalgam-v2/network)
-[![Commit Activity](https://img.shields.io/github/commit-activity/m/DEVXeno-ops/Amalgam-v2?style=for-the-badge)](https://github.com/DEVXeno-ops/Amalgam-v2/commits)
+[![Stars](https://img.shields.io/github/stars/Devtom968/Amalgam-v2?style=for-the-badge&logo=github)](https://github.com/Devtom968/Amalgam-v2/stargazers)
+[![Forks](https://img.shields.io/github/forks/Devtom968/Amalgam-v2?style=for-the-badge&logo=github)](https://github.com/Devtom968/Amalgam-v2/network)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/Devtom968/Amalgam-v2?style=for-the-badge)](https://github.com/Devtom968/Amalgam-v2/commits)
 [![License](https://img.shields.io/badge/license-DWYW-blue?style=for-the-badge)]()
 
 💬 **Community Discord**  
@@ -101,8 +101,8 @@ Changes include:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/DEVXeno-ops/Amalgam-v2.git
-````
+git clone https://github.com/Devtom968/Amalgam-v2.git
+```
 
 ### 2. Open the solution
 
