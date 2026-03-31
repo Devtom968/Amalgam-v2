@@ -345,16 +345,11 @@ int CAimbotHitscan::CanHit(Target_t &tTarget, CTFPlayer *pLocal,
   if (iLastTickBone != I::GlobalVars->tickcount)
   {
 	  iTargetBone = 0;
-	  CStudioHdr* pHDR = tTarget.m_pEntity->As<CBaseAnimating>()->GetModelPtr();
-	  if (pHDR)
+	  if (pSet)
 	  {
-		  mstudiohitboxset_t* set = pHDR->pHitboxSet(tTarget.m_pEntity->As<CBaseAnimating>()->m_nHitboxSet());
-		  if (set)
-		  {
-			  mstudiobbox_t* headBox = set->pHitbox(HITBOX_HEAD);
-			  if (headBox)
-				  iTargetBone = headBox->bone;
-		  }
+		  mstudiobbox_t* headBox = pSet->pHitbox(HITBOX_HEAD);
+		  if (headBox)
+			  iTargetBone = headBox->bone;
 	  }
 	  iLastTickBone = I::GlobalVars->tickcount;
   }
