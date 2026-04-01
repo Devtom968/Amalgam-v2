@@ -368,6 +368,20 @@ int CAimbotHitscan::CanHit(Target_t &tTarget, CTFPlayer *pLocal,
                 return pDoubletapAngle->DeltaAngle(vAnglesA).Length2D() <
                        pDoubletapAngle->DeltaAngle(vAnglesB).Length2D();
               });
+  } else if (tTarget.m_iTargetType == TargetEnum::Player) {
+    std::sort(vRecords.begin(), vRecords.end(),
+              [&](const TickRecord *a, const TickRecord *b) -> bool {
+                Vec3 vPosA = {a->m_aBones[iTargetBone][0][3],
+                              a->m_aBones[iTargetBone][1][3],
+                              a->m_aBones[iTargetBone][2][3]};
+                Vec3 vPosB = {b->m_aBones[iTargetBone][0][3],
+                              b->m_aBones[iTargetBone][1][3],
+                              b->m_aBones[iTargetBone][2][3]};
+                Vec3 vAnglesA = Math::CalcAngle(m_vEyePos, vPosA);
+                Vec3 vAnglesB = Math::CalcAngle(m_vEyePos, vPosB);
+                return G::CurrentUserCmd->viewangles.DeltaAngle(vAnglesA).Length2D() <
+                       G::CurrentUserCmd->viewangles.DeltaAngle(vAnglesB).Length2D();
+              });
   }
 
   int iReturn = false;
@@ -522,7 +536,7 @@ int CAimbotHitscan::CanHit(Target_t &tTarget, CTFPlayer *pLocal,
 				  flBoneScale =
 					  std::max(flBoneScale,
 						  Vars::Aimbot::Hitscan::MultipointScale.Value / 100.f);
-				  if (!bTriggerbot) {
+				  if (!bTriggerbot && flMultipointScale > 0.f) {
 					  Vec3 vMinsS = (vMins - vMaxs) / 2 * flMultipointScale;
 					  Vec3 vMaxsS = (vMaxs - vMins) / 2 * flMultipointScale;
 
@@ -757,7 +771,7 @@ bool CAimbotHitscan::ShouldFire(CTFPlayer *pLocal, CTFWeaponBase *pWeapon,
 
   if (Vars::Aimbot::Hitscan::HitChance.Value && pWeapon->GetWeaponSpread()) {
     float flHC = SDK::GetHitchance(tTarget.m_vAngleTo, tTarget.m_pEntity, pLocal, pWeapon);
-    if (flHC < std::min(Vars::Aimbot::Hitscan::HitChance.Value, 50.f))
+    if (flHC < std::min(Vars::Aimbot::Hitscan::HitChance.Value, 99.f))
       return false;
   }
 

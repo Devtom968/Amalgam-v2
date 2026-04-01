@@ -363,6 +363,16 @@ int CAimbotMelee::CanHit(Target_t& tTarget, CTFPlayer* pLocal, CTFWeaponBase* pW
 		vRecords = { &F::Backtrack.m_tRecord };
 	}
 
+	if (tTarget.m_iTargetType == TargetEnum::Player) {
+		std::sort(vRecords.begin(), vRecords.end(),
+				  [&](const TickRecord* a, const TickRecord* b) -> bool {
+					  Vec3 vAngleA = Math::CalcAngle(m_vEyePos, a->m_vOrigin);
+					  Vec3 vAngleB = Math::CalcAngle(m_vEyePos, b->m_vOrigin);
+					  return G::CurrentUserCmd->viewangles.DeltaAngle(vAngleA).Length2D() <
+							 G::CurrentUserCmd->viewangles.DeltaAngle(vAngleB).Length2D();
+				  });
+	}
+
 	CGameTrace trace = {};
 	CTraceFilterHitscan filter = {};
 	filter.pSkip = pLocal;

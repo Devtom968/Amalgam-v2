@@ -109,7 +109,7 @@ static int lua_vector_new(lua_State *L) {
   float x = (float)luaL_optnumber(L, 1, 0.0);
   float y = (float)luaL_optnumber(L, 2, 0.0);
   float z = (float)luaL_optnumber(L, 3, 0.0);
-  lua_newtable(L);
+  lua_createtable(L, 0, 3);
   lua_pushnumber(L, x);
   lua_setfield(L, -2, "x");
   lua_pushnumber(L, y);
@@ -171,13 +171,16 @@ static int lua_vector_mul(lua_State *L) {
 static CBaseEntity *GetEntityFromLua(lua_State *L, int idx) {
   if (!I::EngineClient->IsInGame() || !lua_istable(L, idx))
     return nullptr;
-  lua_getfield(L, idx, "__index_id");
+  
+  // Fast raw fetch using integer lookup
+  lua_rawgeti(L, idx, 1);
   if (!lua_isnumber(L, -1)) {
     lua_pop(L, 1);
     return nullptr;
   }
   int entindex = (int)lua_tointeger(L, -1);
   lua_pop(L, 1);
+  
   if (entindex <= 0 || entindex > 2048)
     return nullptr;
   auto pClientEnt = I::ClientEntityList->GetClientEntity(entindex);
@@ -395,6 +398,8 @@ static int lua_entity_get_netvar(lua_State *L) {
   return 1;
 }
 
+static char s_EntityCacheKey;
+
 static int PushEntity(lua_State *L, CBaseEntity *pEnt) {
   if (!pEnt || !I::EngineClient->IsInGame()) {
     lua_pushnil(L);
@@ -405,11 +410,40 @@ static int PushEntity(lua_State *L, CBaseEntity *pEnt) {
     lua_pushnil(L);
     return 1;
   }
-  lua_newtable(L);
+  
+  // Try to push from cache
+  lua_pushlightuserdata(L, &s_EntityCacheKey);
+  lua_rawget(L, LUA_REGISTRYINDEX);
+  
+  if (!lua_istable(L, -1)) {
+    lua_pop(L, 1);
+    lua_newtable(L);
+    lua_pushlightuserdata(L, &s_EntityCacheKey);
+    lua_pushvalue(L, -2);
+    lua_rawset(L, LUA_REGISTRYINDEX);
+  }
+  
+  lua_rawgeti(L, -1, idx);
+  if (lua_istable(L, -1)) {
+    lua_remove(L, -2); // remove cache table
+    return 1;
+  }
+  lua_pop(L, 1); // pop nil
+  
+  // Create table
+  lua_createtable(L, 1, 1);
   lua_pushinteger(L, idx);
-  lua_setfield(L, -2, "__index_id");
+  lua_rawseti(L, -2, 1); // Fast C++ index
+  lua_pushinteger(L, idx);
+  lua_setfield(L, -2, "__index_id"); // Backward compat
   luaL_getmetatable(L, "Entity");
   lua_setmetatable(L, -2);
+  
+  // Cache it
+  lua_pushvalue(L, -1);
+  lua_rawseti(L, -3, idx);
+  lua_remove(L, -2); // remove cache table
+  
   return 1;
 }
 
@@ -483,8 +517,8 @@ static int lua_entities_get_by_index(lua_State *L) {
 }
 
 static int lua_entities_get_players(lua_State *L) {
-  lua_newtable(L);
-  if (!I::EngineClient->IsInGame()) return 1;
+  if (!I::EngineClient->IsInGame()) { lua_newtable(L); return 1; }
+  lua_createtable(L, I::EngineClient->GetMaxClients(), 0);
   int i = 1;
   for (int n = 1; n <= I::EngineClient->GetMaxClients(); n++) {
     auto pClientEnt = I::ClientEntityList->GetClientEntity(n);
@@ -498,10 +532,10 @@ static int lua_entities_get_players(lua_State *L) {
 }
 
 static int lua_entities_get_enemy_players(lua_State *L) {
-  lua_newtable(L);
-  if (!I::EngineClient->IsInGame()) return 1;
+  if (!I::EngineClient->IsInGame()) { lua_newtable(L); return 1; }
   auto pLocal = H::Entities.GetLocal();
-  if (!pLocal) return 1;
+  if (!pLocal) { lua_newtable(L); return 1; }
+  lua_createtable(L, I::EngineClient->GetMaxClients(), 0);
   int i = 1;
   for (int n = 1; n <= I::EngineClient->GetMaxClients(); n++) {
     auto pClientEnt = I::ClientEntityList->GetClientEntity(n);
@@ -516,12 +550,12 @@ static int lua_entities_get_enemy_players(lua_State *L) {
 }
 
 static int lua_entities_get_buildings(lua_State *L) {
-  lua_newtable(L);
-  if (!I::EngineClient->IsInGame()) return 1;
+  if (!I::EngineClient->IsInGame()) { lua_newtable(L); return 1; }
   auto pLocal = H::Entities.GetLocal();
-  if (!pLocal) return 1;
+  if (!pLocal) { lua_newtable(L); return 1; }
 
   bool bEnemyOnly = lua_isboolean(L, 1) ? lua_toboolean(L, 1) : true;
+  lua_createtable(L, 64, 0); // Preallocate size mapping
   int i = 1;
 
   for (int n = I::EngineClient->GetMaxClients() + 1; n <= I::ClientEntityList->GetHighestEntityIndex(); n++) {
@@ -715,7 +749,7 @@ static int lua_engine_trace_line(lua_State* L) {
     CLuaTraceFilter filter;
     SDK::Trace(start, end, mask, &filter, &trace);
 
-    lua_newtable(L);
+    lua_createtable(L, 0, 3);
     lua_pushnumber(L, trace.fraction);
     lua_setfield(L, -2, "fraction");
     lua_pushboolean(L, trace.DidHit());

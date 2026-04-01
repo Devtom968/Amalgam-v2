@@ -1635,7 +1635,12 @@ bool CAimbotProjectile::HandleDirect(std::vector<Direct_t> &vDirectHistory) {
 
   std::sort(vDirectHistory.begin(), vDirectHistory.end(),
             [&](const Direct_t &a, const Direct_t &b) -> bool {
-              return a.m_iPriority < b.m_iPriority;
+              if (a.m_iPriority != b.m_iPriority)
+                return a.m_iPriority < b.m_iPriority;
+              Vec3 vAngleA = {a.m_flPitch, a.m_flYaw, 0.f};
+              Vec3 vAngleB = {b.m_flPitch, b.m_flYaw, 0.f};
+              return G::CurrentUserCmd->viewangles.DeltaAngle(vAngleA).Length2D() <
+                     G::CurrentUserCmd->viewangles.DeltaAngle(vAngleB).Length2D();
             });
 
   m_flTimeTo = vDirectHistory.front().m_flTime + m_tInfo.m_flLatency;
